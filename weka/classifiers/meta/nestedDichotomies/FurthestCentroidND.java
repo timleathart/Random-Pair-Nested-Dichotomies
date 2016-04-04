@@ -62,7 +62,7 @@ import java.util.*;
  * <pre>
  * &#64;incollection{duarte2012nested,
  *    	title={Nested Dichotomies Based on Clustering},
- * 		author={Duarte-Villase{\~n}or, Miriam M{\'o}nica and Carrasco-Ochoa, Jes{\'u}s Ariel and Mart{\'\i}nez-Trinidad, Jos{\'e} Francisco and Flores-Garrido, Marisol},
+ * 		author={Duarte-Villasenor, Miriam Monica and Carrasco-Ochoa, Jesus Ariel and Martinez-Trinidad, Jose Francisco and Flores-Garrido, Marisol},
  * 		booktitle={Progress in Pattern Recognition, Image Analysis, Computer Vision, and Applications},
  * 		pages={162--169},
  * 		year={2012},
@@ -152,8 +152,8 @@ public class FurthestCentroidND extends RandomizableSingleClassifierEnhancer
     TechnicalInformation additional;
 
     result = new TechnicalInformation(Type.INPROCEEDINGS);
-    result.setValue(Field.AUTHOR, "Duarte-Villase{\~n}or, Miriam M{\'o}nica and Carrasco-Ochoa, " 
-       + "Jes{\'u}s Ariel and Mart{\'\i}nez-Trinidad, Jos{\'e} Francisco and Flores-Garrido, Marisol");
+    result.setValue(Field.AUTHOR, "Duarte-Villasenor, Miriam Monica and Carrasco-Ochoa, " 
+       + "Jesus Ariel and Martinez-Trinidad, Jose Francisco and Flores-Garrido, Marisol");
     result.setValue(Field.TITLE,
       "Nested Dichotomies Based on Clustering");
     result.setValue(Field.BOOKTITLE, "Progress in Pattern Recognition, Image Analysis, Computer Vision, and Applications");

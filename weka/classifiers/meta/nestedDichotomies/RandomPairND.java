@@ -55,9 +55,6 @@ public class RandomPairND extends RandomizableSingleClassifierEnhancer {
   /** The percentage of the instances to train the initial classifier on */
   protected double m_subsamplePercent = 100.0;
 
-  /** The number of random pairs to pick, where the best pair is chosen */
-  protected int m_numRandomPairs = 1;
-
   /** The first successor */
   protected RandomPairND m_FirstSuccessor = null;
 
@@ -427,25 +424,14 @@ public class RandomPairND extends RandomizableSingleClassifierEnhancer {
             "\tPercentage of instances to be used in the \n"
           + "\ttraining of the initial classifier (default 100)",
             "P", 1, "-P"));
-    newVector.addElement(new Option(
-            "\tNumber of random pairs to choose, selecting\n"
-          + "\tbest one for the actual split (default 1)",
-            "N", 1, "-N"));
-
-    newVector.addAll(Collections.list(super.listOptions()));
+    
+	newVector.addAll(Collections.list(super.listOptions()));
 
     return newVector.elements();
   }
 
   @Override
   public void setOptions(String[] options) throws Exception {
-
-    String numRandomPairs = Utils.getOption('N', options);
-    if (numRandomPairs.length() != 0) {
-      setNumRandomPairs(Integer.parseInt(numRandomPairs));
-    } else {
-      setNumRandomPairs(1);
-    }
 
     String subsamplePercent = Utils.getOption('P', options);
     if (subsamplePercent.length() != 0) {
@@ -472,24 +458,13 @@ public class RandomPairND extends RandomizableSingleClassifierEnhancer {
     options.add("-P");
     options.add("" + getSubsamplePercent());
 
-    options.add("-N");
-    options.add("" + getNumRandomPairs());
-
     Collections.addAll(options, super.getOptions());
 
     return options.toArray(new String[0]);
   }
 
-  public void setNumRandomPairs(int numRandomPairs) {
-    m_numRandomPairs = numRandomPairs;
-  }
-
   public void setSubsamplePercent(double percent) {
     m_subsamplePercent = percent;
-  }
-
-  public int getNumRandomPairs() {
-    return m_numRandomPairs;
   }
 
   public double getSubsamplePercent() {
