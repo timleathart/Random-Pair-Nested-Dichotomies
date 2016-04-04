@@ -14,8 +14,8 @@
  */
 
 /*
- *    ClassBalancedND.java
- *    Copyright (C) 2005 University of Waikato, Hamilton, New Zealand
+ *    FurthestCentroidND.java
+ *    Copyright (C) 2016 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -42,12 +42,14 @@ import java.util.*;
 
 /**
  * <!-- globalinfo-start --> A meta classifier for handling multi-class datasets
- * with 2-class classifiers by building a random class-balanced tree structure.<br/>
+ * with 2-class classifiers by building a nested dichotomy, selecting the class
+ * subsets based on the furthest centroids.<br/>
  * <br/>
  * For more info, check<br/>
  * <br/>
- * Lin Dong, Eibe Frank, Stefan Kramer: Ensembles of Balanced Nested Dichotomies
- * for Multi-class Problems. In: PKDD, 84-95, 2005.<br/>
+ * Duarte-Villasenor, Miriam Monica, et al: Nested Dichotomies Based on Clustering.
+ * In: Progress in Pattern Recognition, Image Analysis, Computer Vision, and Applications,
+ * 2012.
  * <br/>
  * Eibe Frank, Stefan Kramer: Ensembles of nested dichotomies for multi-class
  * problems. In: Twenty-first International Conference on Machine Learning,
@@ -58,13 +60,13 @@ import java.util.*;
  * <!-- technical-bibtex-start --> BibTeX:
  * 
  * <pre>
- * &#64;inproceedings{Dong2005,
- *    author = {Lin Dong and Eibe Frank and Stefan Kramer},
- *    booktitle = {PKDD},
- *    pages = {84-95},
- *    publisher = {Springer},
- *    title = {Ensembles of Balanced Nested Dichotomies for Multi-class Problems},
- *    year = {2005}
+ * &#64;incollection{duarte2012nested,
+ *    	title={Nested Dichotomies Based on Clustering},
+ * 		author={Duarte-Villase{\~n}or, Miriam M{\'o}nica and Carrasco-Ochoa, Jes{\'u}s Ariel and Mart{\'\i}nez-Trinidad, Jos{\'e} Francisco and Flores-Garrido, Marisol},
+ * 		booktitle={Progress in Pattern Recognition, Image Analysis, Computer Vision, and Applications},
+ * 		pages={162--169},
+ * 		year={2012},
+ * 		publisher={Springer}
  * }
  * 
  * &#64;inproceedings{Frank2004,
@@ -77,92 +79,11 @@ import java.util.*;
  * </pre>
  * <p/>
  * <!-- technical-bibtex-end -->
- * 
- * <!-- options-start --> Valid options are:
- * <p/>
- * 
- * <pre>
- * -S &lt;num&gt;
- *  Random number seed.
- *  (default 1)
- * </pre>
- * 
- * <pre>
- * -D
- *  If set, classifier is run in debug mode and
- *  may output additional info to the console
- * </pre>
- * 
- * <pre>
- * -W
- *  Full name of base classifier.
- *  (default: weka.classifiers.trees.J48)
- * </pre>
- * 
- * <pre>
- * Options specific to classifier weka.classifiers.trees.J48:
- * </pre>
- * 
- * <pre>
- * -U
- *  Use unpruned tree.
- * </pre>
- * 
- * <pre>
- * -C &lt;pruning confidence&gt;
- *  Set confidence threshold for pruning.
- *  (default 0.25)
- * </pre>
- * 
- * <pre>
- * -M &lt;minimum number of instances&gt;
- *  Set minimum number of instances per leaf.
- *  (default 2)
- * </pre>
- * 
- * <pre>
- * -R
- *  Use reduced error pruning.
- * </pre>
- * 
- * <pre>
- * -N &lt;number of folds&gt;
- *  Set number of folds for reduced error
- *  pruning. One fold is used as pruning set.
- *  (default 3)
- * </pre>
- * 
- * <pre>
- * -B
- *  Use binary splits only.
- * </pre>
- * 
- * <pre>
- * -S
- *  Don't perform subtree raising.
- * </pre>
- * 
- * <pre>
- * -L
- *  Do not clean up after the tree has been built.
- * </pre>
- * 
- * <pre>
- * -A
- *  Laplace smoothing for predicted probabilities.
- * </pre>
- * 
- * <pre>
- * -Q &lt;seed&gt;
- *  Seed for random data shuffling (default 1).
- * </pre>
- * 
- * <!-- options-end -->
- * 
- * @author Lin Dong
- * @author Eibe Frank
+ *
+ * @author Tim Leathart
+ * Based on ClassBalancedND.java
  */
-public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
+public class FurthestCentroidND extends RandomizableSingleClassifierEnhancer
   implements TechnicalInformationHandler {
 
   /** for serialization */
@@ -181,10 +102,10 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
   protected int m_numRandomPairs = 1;
 
   /** The first successor */
-  protected NearestCentroidND m_FirstSuccessor = null;
+  protected FurthestCentroidND m_FirstSuccessor = null;
 
   /** The second successor */
-  protected NearestCentroidND m_SecondSuccessor = null;
+  protected FurthestCentroidND m_SecondSuccessor = null;
 
   /** The classes that are grouped together at the current node */
   protected Range m_Range = null;
@@ -198,12 +119,12 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
   /**
    * Constructor.
    */
-  public NearestCentroidND() {
+  public FurthestCentroidND() {
 
     m_Classifier = new weka.classifiers.functions.Logistic();
   }
 
-  public NearestCentroidND(double[][] centroids) {
+  public FurthestCentroidND(double[][] centroids) {
     this();
     m_Centroids = centroids;
   }
@@ -215,7 +136,6 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
    */
   @Override
   protected String defaultClassifierString() {
-
     return "weka.classifiers.functions.Logistic";
   }
 
@@ -232,12 +152,13 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
     TechnicalInformation additional;
 
     result = new TechnicalInformation(Type.INPROCEEDINGS);
-    result.setValue(Field.AUTHOR, "Lin Dong and Eibe Frank and Stefan Kramer");
+    result.setValue(Field.AUTHOR, "Duarte-Villase{\~n}or, Miriam M{\'o}nica and Carrasco-Ochoa, " 
+       + "Jes{\'u}s Ariel and Mart{\'\i}nez-Trinidad, Jos{\'e} Francisco and Flores-Garrido, Marisol");
     result.setValue(Field.TITLE,
-      "Ensembles of Balanced Nested Dichotomies for Multi-class Problems");
-    result.setValue(Field.BOOKTITLE, "PKDD");
-    result.setValue(Field.YEAR, "2005");
-    result.setValue(Field.PAGES, "84-95");
+      "Nested Dichotomies Based on Clustering");
+    result.setValue(Field.BOOKTITLE, "Progress in Pattern Recognition, Image Analysis, Computer Vision, and Applications");
+    result.setValue(Field.YEAR, "2012");
+    result.setValue(Field.PAGES, "162-169");
     result.setValue(Field.PUBLISHER, "Springer");
 
     additional = result.add(Type.INPROCEEDINGS);
@@ -493,7 +414,7 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
     }
 
     // Create two successors if necessary
-    m_FirstSuccessor = new NearestCentroidND(m_Centroids);
+    m_FirstSuccessor = new FurthestCentroidND(m_Centroids);
     if (first == 1) {
       m_FirstSuccessor.m_Range = m_Range;
     } else {
@@ -506,7 +427,7 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
       m_FirstSuccessor.generateClassifierForNode(firstSubset, m_Range, rand,
         classifier, m_classifiers);
     }
-    m_SecondSuccessor = new NearestCentroidND(m_Centroids);
+    m_SecondSuccessor = new FurthestCentroidND(m_Centroids);
     if (second == 1) {
       m_SecondSuccessor.m_Range = secondRange;
     } else {
@@ -516,7 +437,7 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
       rwv.setAttributeIndex("" + (data.classIndex() + 1));
       rwv.setInputFormat(data);
       Instances secondSubset = Filter.useFilter(data, rwv);
-      m_SecondSuccessor = new NearestCentroidND();
+      m_SecondSuccessor = new FurthestCentroidND();
 
       m_SecondSuccessor.generateClassifierForNode(secondSubset, secondRange,
         rand, classifier, m_classifiers);
@@ -664,15 +585,6 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
 
     Vector<Option> newVector = new Vector<Option>(3);
 
-    newVector.addElement(new Option(
-            "\tPercentage of instances to be used in the \n"
-          + "\ttraining of the initial classifier (default 100)",
-            "P", 1, "-P"));
-    newVector.addElement(new Option(
-            "\tNumber of random pairs to choose, selecting\n"
-          + "\tbest one for the actual split (default 1)",
-            "N", 1, "-N"));
-
     newVector.addAll(Collections.list(super.listOptions()));
 
     return newVector.elements();
@@ -680,20 +592,6 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
 
   @Override
   public void setOptions(String[] options) throws Exception {
-
-    String numRandomPairs = Utils.getOption('N', options);
-    if (numRandomPairs.length() != 0) {
-      setNumRandomPairs(Integer.parseInt(numRandomPairs));
-    } else {
-      setNumRandomPairs(1);
-    }
-
-    String subsamplePercent = Utils.getOption('P', options);
-    if (subsamplePercent.length() != 0) {
-      setSubsamplePercent(Double.parseDouble(subsamplePercent));
-    } else {
-      setSubsamplePercent(100.0);
-    }
 
     super.setOptions(options);
 
@@ -710,31 +608,9 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
 
     Vector<String> options = new Vector<String>();
 
-    options.add("-P");
-    options.add("" + getSubsamplePercent());
-
-    options.add("-N");
-    options.add("" + getNumRandomPairs());
-
     Collections.addAll(options, super.getOptions());
 
     return options.toArray(new String[0]);
-  }
-
-  public void setNumRandomPairs(int numRandomPairs) {
-    m_numRandomPairs = numRandomPairs;
-  }
-
-  public void setSubsamplePercent(double percent) {
-    m_subsamplePercent = percent;
-  }
-
-  public int getNumRandomPairs() {
-    return m_numRandomPairs;
-  }
-
-  public double getSubsamplePercent() {
-    return m_subsamplePercent;
   }
 
   /**
@@ -744,7 +620,8 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
   public String globalInfo() {
 
     return "A meta classifier for handling multi-class datasets with 2-class "
-      + "classifiers by building a random class-balanced tree structure.\n\n"
+      + "classifiers by building a nested dichotomy with furthest centroid "
+      + "class subset selection.\n\n"
       + "For more info, check\n\n" + getTechnicalInformation().toString();
   }
 
@@ -757,10 +634,10 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
   public String toString() {
 
     if (m_classifiers == null) {
-      return "ClassBalancedND: No model built yet.";
+      return "FurthestCentroidND: No model built yet.";
     }
     StringBuffer text = new StringBuffer();
-    text.append("ClassBalancedND");
+    text.append("FurthestCentroidND");
     treeToString(text, 0);
 
     return text.toString();
@@ -805,6 +682,6 @@ public class NearestCentroidND extends RandomizableSingleClassifierEnhancer
    * @param argv the options
    */
   public static void main(String[] argv) {
-    runClassifier(new NearestCentroidND(), argv);
+    runClassifier(new FurthestCentroidND(), argv);
   }
 }
