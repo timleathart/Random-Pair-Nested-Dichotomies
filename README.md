@@ -22,8 +22,8 @@ Work in progress. Currently, you can make nested dichotomies with completely ran
 References
 ----------
 
-[1]: Leathart, Tim, Bernhard Pfahringer, and Eibe Frank. "Building Ensembles of Adaptive Nested Dichotomies with Random-Pair Selection." arXiv preprint arXiv:1604.01854 (2016).
+[1]: Leathart, T., Pfahringer, B., & Frank, E. (2016). Building Ensembles of Adaptive Nested Dichotomies with Random-Pair Selection. arXiv preprint arXiv:1604.01854.
 
-[2]: Duarte-Villaseñor, Miriam Mónica, et al. "Nested dichotomies based on clustering." Iberoamerican Congress on Pattern Recognition. Springer Berlin Heidelberg, 2012.
+[2]: Duarte-Villaseñor, M. M., Carrasco-Ochoa, J. A., Martínez-Trinidad, J. F., & Flores-Garrido, M. (2012, September). Nested dichotomies based on clustering. In Iberoamerican Congress on Pattern Recognition (pp. 162-169). Springer Berlin Heidelberg.
 
 
