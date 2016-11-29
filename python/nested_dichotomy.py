@@ -2,6 +2,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.base import clone, is_classifier
+from sklearn.metrics import confusion_matrix
 from sklearn.multiclass import _ConstantPredictor
 
 subset_selection_methods = [
@@ -38,8 +39,6 @@ class NestedDichotomy(BaseEstimator, ClassifierMixin):
 
         # Create leaf node if only one class present
         if len(labels) == 1:
-            print "Creating leaf node: ", y[0]
-
             self.estimator = _ConstantPredictor().fit(X, labels)
             return
 
@@ -124,12 +123,13 @@ class NestedDichotomy(BaseEstimator, ClassifierMixin):
         return np.array_split(labels, 2)
 
     def _random_pair_selection(self, labels, X, y):
+        sorted_labels = np.sort(self.classes_)
         np.random.shuffle(labels)
 
         pos_labels = [labels[0]]
         neg_labels = [labels[1]]
 
-        idx = y == labels[0] | y == labels[1]
+        idx = np.logical_or(y == labels[0], y == labels[1])
 
         new_y = y[idx]
 
@@ -141,5 +141,25 @@ class NestedDichotomy(BaseEstimator, ClassifierMixin):
         self.estimator = clone(self.estimator)
         self.estimator.fit(X[idx], new_y)
 
-        # TODO
-        pass
+        # TODO: test the remaining data on the estimator and make groups based on them
+        preds = self.estimator.predict(X[~idx])
+
+        cm = confusion_matrix(y[~idx], preds, labels=sorted_labels)
+
+        for y_val in labels:
+            if y_val in labels[:2]:
+                continue
+                
+            if cm[y_val][0] < cm[y_val][1]:
+                pos_labels += [y_val]
+            else:
+                neg_labels += [y_val]      
+        
+        return pos_labels, neg_labels
+
+
+
+
+
+
+
